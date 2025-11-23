@@ -1,103 +1,98 @@
-class Hamburger {
-  constructor(size, stuffing) {
-    this.prices = {
-      small: 50,
-      big: 100,
-      cheese: 10,
-      salad: 20,
-      potato: 15,
-      mayo: 20,
-      spice: 15
-    };
-
-    this.calories = {
-      small: 20,
-      big: 40,
-      cheese: 20,
-      salad: 5,
-      potato: 10,
-      mayo: 5,
-      spice: 0
-    };
-
-    this.validSizes = ["small", "big"];
-    this.validStuffings = ["cheese", "salad", "potato"];
-    this.validToppings = ["mayo", "spice"];
-
-    this.addedToppings = [];
-
-    size = String(size).toLowerCase();
-    stuffing = String(stuffing).toLowerCase();
-
-    if (!this.validSizes.includes(size)) {
-      throw new Error("Wrong size");
+function Hamburger(size, stuffing) {
+    if (!size) {
+        throw new HamburgerException('no size given');
+    }
+    if (!stuffing) {
+        throw new HamburgerException('no stuffing given');
     }
 
-    if (!this.validStuffings.includes(stuffing)) {
-      throw new Error("Wrong stuffing");
+    var sizes = [Hamburger.SIZE_SMALL, Hamburger.SIZE_LARGE];
+    var stuffings = [Hamburger.STUFFING_CHEESE, Hamburger.STUFFING_SALAD, Hamburger.STUFFING_POTATO];
+
+    if (sizes.indexOf(size) === -1) {
+        throw new HamburgerException('invalid size ' + size);
     }
 
-    this.size = size;
-    this.stuffing = stuffing;
-  }
-
-  addTopping(topping) {
-    topping = String(topping).toLowerCase();
-
-    if (!this.validToppings.includes(topping)) {
-      throw new Error("Invalid topping type");
+    if (stuffings.indexOf(stuffing) === -1) {
+        throw new HamburgerException('invalid stuffing ' + stuffing);
     }
 
-    if (this.addedToppings.includes(topping)) {
-      throw new Error("Topping already added");
+    this._size = size;
+    this._stuffing = stuffing;
+    this._toppings = [];
+}
+
+Hamburger.SIZE_SMALL = { price: 50, calories: 20 };
+Hamburger.SIZE_LARGE = { price: 100, calories: 40 };
+
+Hamburger.STUFFING_CHEESE = { price: 10, calories: 20 };
+Hamburger.STUFFING_SALAD = { price: 20, calories: 5 };
+Hamburger.STUFFING_POTATO = { price: 15, calories: 10 };
+
+Hamburger.TOPPING_MAYO = { price: 20, calories: 5 };
+Hamburger.TOPPING_SPICE = { price: 15, calories: 0 };
+
+Hamburger.prototype.addTopping = function (topping) {
+    if (!topping || !topping.price) {
+        throw new HamburgerException('invalid topping ' + topping);
     }
 
-    this.addedToppings.push(topping);
-  }
-
-  removeTopping(topping) {
-    topping = String(topping).toLowerCase();
-
-    if (!this.addedToppings.includes(topping)) {
-      throw new Error("Topping not found");
+    if (this._toppings.indexOf(topping) !== -1) {
+        throw new HamburgerException('duplicate topping');
     }
 
-    this.addedToppings = this.addedToppings.filter(e => e !== topping);
-  }
+    this._toppings.push(topping);
+};
 
-  getSize() {
-    return this.size;
-  }
+Hamburger.prototype.removeTopping = function (topping) {
+    var index = this._toppings.indexOf(topping);
 
-  getToppings() {
-    return this.addedToppings;
-  }
+    if (index === -1) {
+        throw new HamburgerException('topping not found');
+    }
 
-  getStuffing() {
-    return this.stuffing;
-  }
+    this._toppings.splice(index, 1);
+};
 
-  calculatePrice() {
-    let sum = 0;
-    sum += this.prices[this.size];
-    sum += this.prices[this.stuffing];
+Hamburger.prototype.getToppings = function () {
+    return this._toppings.slice();
+};
 
-    this.addedToppings.forEach(e => {
-      sum += this.prices[e];
-    });
+Hamburger.prototype.getSize = function () {
+    return this._size;
+};
+
+Hamburger.prototype.getStuffing = function () {
+    return this._stuffing;
+};
+
+Hamburger.prototype.calculatePrice = function () {
+    var sum = 0;
+
+    sum += this._size.price;
+    sum += this._stuffing.price;
+
+    for (var i = 0; i < this._toppings.length; i++) {
+        sum += this._toppings[i].price;
+    }
 
     return sum;
-  }
+};
 
-  calculateCalories() {
-    let sum = 0;
-    sum += this.calories[this.size];
-    sum += this.calories[this.stuffing];
+Hamburger.prototype.calculateCalories = function () {
+    var sum = 0;
 
-    this.addedToppings.forEach(e => {
-      sum += this.calories[e];
-    });
+    sum += this._size.calories;
+    sum += this._stuffing.calories;
+
+    for (var i = 0; i < this._toppings.length; i++) {
+        sum += this._toppings[i].calories;
+    }
 
     return sum;
-  }
+};
+
+function HamburgerException(message) {
+    this.message = message;
+    this.name = 'HamburgerException';
 }
